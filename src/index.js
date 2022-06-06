@@ -4,107 +4,115 @@ import SimpleLightbox from "simplelightbox";
 // Дополнительный импорт стилей
 import "simplelightbox/dist/simple-lightbox.min.css";
 import './css/styles.css';
+const axios = require('axios');
+
+const gallery = document.querySelector('.gallery');
+const searchForm = document.querySelector('.search-form');
+const loadMoreBtn = document.querySelector('.load-more');
 
 const BASE_URL = 'https://pixabay.com/api/';
-const API_KEY = '27785613-3c730127b1356d079421a0eb8';
+const MY_API_KEY = '27785613-3c730127b1356d079421a0eb8';  
+const searchParams = new URLSearchParams({
+    image_type: "photo",
+    orientation: "horizontal",
+    safesearch: true,
+    per_page: 40,
+});
 
-const searchForm = document.querySelector('#search-form');
-const searchQuery = document.querySelector('input[name=searchQuery]');
-const gallery = document.querySelector('.gallery');
-const searchBtn = document.querySelector('button[type=submit]');
-const loadMoreBtn = document.querySelector('.load-more');
-// console.log(searchForm);
-// console.log(searchQuery);
-// console.log(gallery);
-// console.log(searchBtn);
-// console.log(loadMoreBtn);
-
-let totalHitsCount = 0;
-let searchUserText = '';
 let page = 1;
-
-// Notify.success(`Hooray! We found ${totalHitsCount} totalHits images`);
-// Notify.failure('Sorry, there are no images matching your search query. Please try again');
-// Notify.info("We're sorry, but you've reached the end of search results");
+let valueInput = '';
+let totalHitsCount = '';
 
 searchForm.addEventListener('submit', handleSubmit);
-loadMoreBtn.addEventListener('click', handleLoadMore);
+loadMoreBtn.addEventListener('click', handleClick);
+
+loadMoreBtn.classList.add('visually-hidden')
 
 function handleSubmit(event) {
     event.preventDefault();
+
+    gallery.innerHTML = '';
+    valueInput = event.currentTarget.elements.searchQuery.value;
+    page = 1;
     
-    searchUserText = event.currentTarget.elements.searchQuery.value;
-    console.log(searchUserText);
+    if (!loadMoreBtn.classList.contains('visually-hidden')) {
+        loadMoreBtn.classList.add('visually-hidden')
+    }
+    getUserText(valueInput).then(() => {
+    if (totalHitsCount > 0) {
+        Notify.success(`Hooray! We found ${totalHitsCount} totalHits images`);
+    }
+        page += 1;
+    })
+}
 
-    fetch(`${BASE_URL}?key=${API_KEY}&q=${searchUserText}&image_type=photo&orientation=horizontal&safesearch=true&per_page=40&page=1`)
-        .then(response => response.json())
+async function getUserText(q) {
+    try {
+        const response = await axios.get(`${BASE_URL}?key=${MY_API_KEY}&q=${q}&${searchParams}&page=${page}`);
+    if (response.data.hits.length === 0) {
+        Notify.failure('Sorry, there are no images matching your search query. Please try again');
+        }
+        
+    let arrayImages = response.data.hits;
+    let lastPage = Math.ceil(response.data.totalHits / 40);
+    totalHitsCount = response.data.totalHits;
+    console.log(totalHitsCount);
+    console.log(page);
+    createListImages(arrayImages);
 
-            // <div class="photo-card">
-            //     <img src="" alt="" loading="lazy" />
-            //     <div class="info">
-            //         <p class="info-item">
-            //             <b>Likes</b>
-            //         </p>
-            //         <p class="info-item">
-            //             <b>Views</b>
-            //         </p>
-            //         <p class="info-item">
-            //             <b>Comments</b>
-            //         </p>
-            //         <p class="info-item">
-            //             <b>Downloads</b>
-            //         </p>
-            //     </div>
-            // </div >
-                
-        .catch(error => console.log(error))
-};
+    if (response.data.total > 40) {
+        loadMoreBtn.classList.remove('visually-hidden');
+    }
+    if (page === lastPage) {
+        if (!loadMoreBtn.classList.contains('visually-hidden')) {
+            loadMoreBtn.classList.add('visually-hidden')
+        }
+        Notify.info("We're sorry, but you've reached the end of search results");
+    }
+    } catch (error) {
+        console.error(error);
+    }
+}
 
-function handleLoadMore() {
-    
-};
+function createListImages(data) {
+    const markup = createMarkupCard(data);
+    gallery.insertAdjacentHTML('beforeend', markup); 
 
-// заготовка отрисовки разметки
-// function renderGallery(photos) {
-//     const markup = photos
-//         .map((photo) => {
-            //// return `<img src = ${user.flags.svg} width="80"/><span style="font-size:40px"> ${user.name.official}</span>
-            //// <p><b>Capital:</b> ${user.capital}</p>
-            //// <p><b>Population:</b> ${new Intl.NumberFormat('en').format(user.population)}</p>
-            //// <p><b>Languages:</b> ${Object.values(user.languages)}</p>`;
+    const lightbox = new SimpleLightbox('.gallery a');
+    lightbox.refresh();
+}
 
-            // return `<div class="photo-card">
-            //     <img src="" alt="" loading="lazy" />
-            //     <div class="info">
-            //         <p class="info-item">
-            //             <b>Likes</b>
-            //         </p>
-            //         <p class="info-item">
-            //             <b>Views</b>
-            //         </p>
-            //         <p class="info-item">
-            //             <b>Comments</b>
-            //         </p>
-            //         <p class="info-item">
-            //             <b>Downloads</b>
-            //         </p>
-            //     </div>
-            // </div>`
-//         })
-//         .join("");
+function createMarkupCard(data){
+    return data.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => 
+        `<div class="photo-card">
+            <a class="link" href="${largeImageURL}"> 
+                <img src="${webformatURL}" alt="${tags}" loading="lazy"/>
+                <div class="info">
+                    <p class="info-item">
+                        <b>Likes</b>
+                        <span>${likes}</span>
+                    </p>
+                    <p class="info-item">
+                        <b>Views</b>
+                        <span>${views}</span>
+                    </p>
+                    <p class="info-item">
+                        <b>Comments</b>
+                        <span>${comments}</span>
+                    </p>
+                    <p class="info-item">
+                        <b>Downloads</b>
+                        <span>${downloads}</span>
+                    </p>
+                </div>
+            </a>
+        </div>`).join(""); 
+}
 
-//     return markup;//если надо
-// };
-
-// gallery.insertAdjacentHTML('beforeend', renderGallery(photos));
-
-
-// инициализация библиотеки SimpleLightbox
-// let gallery = new SimpleLightbox('.gallery a',
-//         {
-//             captionsData: 'alt',
-//             captionDelay: 250,
-//         });
-//     galleryImage.on('show.simplelightbox', function () {
-//     });
-// refresh() //добавить
+function handleClick() {
+    getUserText(valueInput)
+        .then(value => {
+            page += 1;
+        }
+    )
+}
