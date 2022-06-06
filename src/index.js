@@ -38,12 +38,17 @@ function handleSubmit(event) {
     if (!loadMoreBtn.classList.contains('visually-hidden')) {
         loadMoreBtn.classList.add('visually-hidden')
     }
-    getUserText(valueInput).then(() => {
+    if (valueInput === '') {
+        Notify.info("Enter a query");
+    } else {
+        getUserText(valueInput).then(() => {
     if (totalHitsCount > 0) {
         Notify.success(`Hooray! We found ${totalHitsCount} totalHits images`);
     }
         page += 1;
     })
+    }
+    
 }
 
 async function getUserText(q) {
