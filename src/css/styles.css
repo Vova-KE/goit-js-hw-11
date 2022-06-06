@@ -20,6 +20,11 @@ img {
     object-fit: cover;
 }
 
+.search-form {
+    display: flex;
+    justify-content: center;
+}
+
 .gallery {
     padding: 40px;
     display: flex;
