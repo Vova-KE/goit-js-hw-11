@@ -61,8 +61,6 @@ async function getUserText(q) {
     let arrayImages = response.data.hits;
     let lastPage = Math.ceil(response.data.totalHits / 40);
     totalHitsCount = response.data.totalHits;
-    console.log(totalHitsCount);
-    console.log(page);
     createListImages(arrayImages);
 
     if (response.data.total > 40) {

@@ -11,6 +11,7 @@ body {
     color: #212121;
     line-height: 1.5;
     font-size: 14px;
+    margin-top: 0;
 }
 
 img {
@@ -20,9 +21,18 @@ img {
     object-fit: cover;
 }
 
+input,
+button {
+    border-radius: 4px;
+}
+
 .search-form {
     display: flex;
     justify-content: center;
+    height: 40px;
+    background-color: #1433e0;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .gallery {
@@ -66,7 +76,6 @@ img {
     width: 150px;
     background-color: #1433e0;
     color: white;
-    border-radius: 4px;
     font-size: 20px;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.15);
     transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
