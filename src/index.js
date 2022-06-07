@@ -4,6 +4,7 @@ import SimpleLightbox from "simplelightbox";
 // Дополнительный импорт стилей
 import "simplelightbox/dist/simple-lightbox.min.css";
 import './css/styles.css';
+import createMarkupCard from './js/create-markup';
 const axios = require('axios');
 
 const gallery = document.querySelector('.gallery');
@@ -38,7 +39,7 @@ function handleSubmit(event) {
     if (!loadMoreBtn.classList.contains('visually-hidden')) {
         loadMoreBtn.classList.add('visually-hidden')
     }
-    if (valueInput === '') {
+    if (valueInput.trim() === '') {
         Notify.info("Enter a query");
     } else {
         getUserText(valueInput).then(() => {
@@ -83,33 +84,6 @@ function createListImages(data) {
 
     const lightbox = new SimpleLightbox('.gallery a');
     lightbox.refresh();
-}
-
-function createMarkupCard(data){
-    return data.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => 
-        `<div class="photo-card">
-            <a class="link" href="${largeImageURL}"> 
-                <img src="${webformatURL}" alt="${tags}" loading="lazy"/>
-                <div class="info">
-                    <p class="info-item">
-                        <b>Likes</b>
-                        <span>${likes}</span>
-                    </p>
-                    <p class="info-item">
-                        <b>Views</b>
-                        <span>${views}</span>
-                    </p>
-                    <p class="info-item">
-                        <b>Comments</b>
-                        <span>${comments}</span>
-                    </p>
-                    <p class="info-item">
-                        <b>Downloads</b>
-                        <span>${downloads}</span>
-                    </p>
-                </div>
-            </a>
-        </div>`).join(""); 
 }
 
 function handleClick() {
